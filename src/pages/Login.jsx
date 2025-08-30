@@ -8,8 +8,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth } from "../firebase/firebase";
-import { db } from "../firebase/firebase";
+import { auth } from "../firebase/firebase.js";
+import { db } from "../firebase/firebase.js";
 import { Eye, EyeOff } from "lucide-react";
 import { setCart } from "../store/slice"; 
 

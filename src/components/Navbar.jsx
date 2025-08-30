@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
+import { auth } from "../firebase/firebase.js";
 import logo from '../assets/images/dara-logo.jpg';
 import cartIcon from '../assets/images/raphael--cart.svg';
 import { Menu, X } from 'lucide-react';

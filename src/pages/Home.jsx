@@ -1,7 +1,7 @@
 // pages/Home.jsx
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { db } from "../firebase/firebase.js";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom";
 

@@ -1,6 +1,6 @@
 import { collection, getDocs, deleteDoc, doc, addDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/firebase"; 
+import { db } from "../firebase/firebase.js"; 
 
 const Admin = () => {
   const [formData, setFormData] = useState({

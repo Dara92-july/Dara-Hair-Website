@@ -1,7 +1,7 @@
 // pages/Shop.jsx
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { db } from "../firebase/firebase.js";
 import ProductCard from "../components/ProductCard";
 
 const Shop = () => {
