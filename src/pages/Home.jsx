@@ -21,9 +21,7 @@ const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section
-        className="relative h-[60vh] flex items-center justify-center text-center"
-      >
+      <section className="relative h-[60vh] flex items-center justify-center text-center">
         <div className="bg-gray-100 bg-opacity-50 w-full h-full flex flex-col items-center justify-center text-white px-4">
           <h1 className="text-4xl md:text-5xl text-black font-bold mb-4">
             Welcome to Dara Hair
@@ -46,10 +44,22 @@ const Home = () => {
           Featured Products
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
+          {products.slice(0, 4).map((product) => (
             <ProductCard key={product.id} {...product} />
           ))}
         </div>
+
+        {/* Link to see all products */}
+        {products.length > 4 && (
+          <div className="text-center mt-8">
+            <Link
+              to="/shop"
+              className="inline-block bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition"
+            >
+              View All Products
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );

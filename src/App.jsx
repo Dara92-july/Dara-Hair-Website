@@ -9,6 +9,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import Shop from "./pages/Shop";
 import Footer from "./components/Footer";
 
 
@@ -24,6 +25,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/shop" element={<Shop />} />
         <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
       <Footer/>

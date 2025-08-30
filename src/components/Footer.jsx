@@ -3,41 +3,33 @@ import logo from "../assets/images/dara-logo.jpg";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-100 border-t mt-10">
-      <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8 text-sm">
+    <footer className="bg-gray-100 mt-10">
+      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-sm">
         {/* Logo & About */}
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <img src={logo} alt="Logo" className="w-8 h-8 rounded-full" />
+        <div className="text-center md:text-left">
+          <div className="flex justify-center md:justify-start items-center space-x-2 mb-3">
+            <img src={logo} alt="Logo" className="w-10 h-10 rounded-full" />
             <span className="text-lg font-bold">Dara Hair</span>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 max-w-xs mx-auto md:mx-0">
             Premium quality wigs and hair products to help you look your best
             every day. Affordable, stylish, and delivered with care.
           </p>
         </div>
 
         {/* Quick Links */}
-        <div>
+        <div className="text-center md:text-left">
           <h3 className="font-semibold mb-3">Quick Links</h3>
           <ul className="space-y-2">
-            <li>
-              <Link to="/" className="hover:text-pink-500">Home</Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-pink-500">About</Link>
-            </li>
-            <li>
-              <Link to="/cart" className="hover:text-pink-500">Cart</Link>
-            </li>
-            <li>
-              <Link to="/profile" className="hover:text-pink-500">Profile</Link>
-            </li>
+            <li><Link to="/" className="hover:text-pink-500">Home</Link></li>
+            <li><Link to="/about" className="hover:text-pink-500">About</Link></li>
+            <li><Link to="/cart" className="hover:text-pink-500">Cart</Link></li>
+            <li><Link to="/profile" className="hover:text-pink-500">Profile</Link></li>
           </ul>
         </div>
 
         {/* Categories */}
-        <div>
+        <div className="text-center md:text-left">
           <h3 className="font-semibold mb-3">Categories</h3>
           <ul className="space-y-2">
             <li><Link to="/category/braided-wig" className="hover:text-pink-500">Braided Wig</Link></li>
@@ -50,18 +42,18 @@ const Footer = () => {
         </div>
 
         {/* Contact */}
-        <div>
+        <div className="text-center md:text-left">
           <h3 className="font-semibold mb-3">Contact Us</h3>
           <ul className="space-y-2 text-gray-600">
-            <li>Phone: +234 813 588 1390</li>
-            <li>Location: Lagos, Nigeria</li>
+            <li>📞 +234 813 588 1390</li>
+            <li>📍 Lagos, Nigeria</li>
           </ul>
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="bg-pink-500 text-white text-center text-sm py-3">
-        © {new Date().getFullYear()} Dara Hair. All rights reserved.
+        © {new Date().getFullYear()} Dara Hair and Extensions. All rights reserved.
       </div>
     </footer>
   );
