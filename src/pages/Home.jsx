@@ -22,17 +22,16 @@ const Home = () => {
     <div>
       {/* Hero Section */}
       <section className="relative h-[60vh] flex items-center justify-center text-center">
-        <div className="bg-gray-100 bg-opacity-50 w-full h-full flex flex-col items-center justify-center text-white px-4">
+        <div className="bg-neutral-100 bg-opacity-50 w-full h-full flex flex-col items-center justify-center text-white px-4">
           <h1 className="text-4xl md:text-5xl text-black font-bold mb-4">
             Welcome to Dara Hair
           </h1>
           <p className="text-lg md:text-xl text-black mb-6">
             Premium wigs & hair products crafted for beauty and confidence.
           </p>
-          <Link
-            to="/shop"
-            className="bg-pink-600 px-6 py-3 rounded-lg text-black hover:bg-pink-700 transition"
-          >
+<Link
+              to="/shop"
+              className="bg-primary-600 px-6 py-3 rounded-lg text-white hover:bg-primary-700 transition"
             Shop Now
           </Link>
         </div>
@@ -54,7 +53,7 @@ const Home = () => {
           <div className="text-center mt-8">
             <Link
               to="/shop"
-              className="inline-block bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition"
+              className="inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition"
             >
               View All Products
             </Link>

@@ -73,10 +73,10 @@ const Login = () => {
   });
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center items-center min-h-screen bg-neutral-50 p-4">
       <form
         onSubmit={formik.handleSubmit}
-        className="w-full max-w-sm bg-white p-6 rounded shadow"
+        className="w-full max-w-sm bg-neutral-100 p-6 rounded shadow"
       >
         <h2 className="text-xl font-bold mb-4">{isLogin ? "Login" : "Sign Up"}</h2>
         <input
@@ -141,7 +141,7 @@ const Login = () => {
         </button>
 
         <p
-          className="text-sm text-blue-500 mt-4 text-center cursor-pointer"
+          className="text-sm text-primary-500 mt-4 text-center cursor-pointer"
           onClick={() => setIsLogin(!isLogin)}
         >
           {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}

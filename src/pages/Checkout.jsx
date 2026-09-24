@@ -149,7 +149,7 @@ const Checkout = () => {
           </div>
           <button
             onClick={handlePayment}
-            className="bg-pink-600 text-white px-4 py-2 rounded mt-4"
+            className="bg-primary-600 text-white px-4 py-2 rounded mt-4"
           >
             Proceed to Payment
           </button>

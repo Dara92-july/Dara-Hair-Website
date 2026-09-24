@@ -5,23 +5,23 @@ const About = () => {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-bold text-center text-pink-600 mb-6">
+      <h1 className="text-3xl md:text-4xl font-bold text-center text-primary-600 mb-6">
         About the brand
       </h1>
 
       {/* Brand Mission */}
-      <p className="text-gray-700 text-lg text-center mb-10 leading-relaxed">
+      <p className="text-neutral-700 text-lg text-center mb-10 leading-relaxed">
         At <span className="font-semibold">Dara Hair and Extensions</span>, we
         believe every woman deserves to feel confident and beautiful. Our
         mission is to provide{" "}
-        <span className="text-pink-600">
+        <span className="text-primary-600">
           affordable, high-quality wigs, hair bundles, and care products
         </span>{" "}
         that blend style, durability, and comfort.
       </p>
 
       {/* Story / Values */}
-      <div className="bg-gray-100 p-6 rounded-lg shadow-md mb-12">
+      <div className="bg-neutral-100 p-6 rounded-lg shadow-md mb-12">
         <p className="text-gray-600 leading-relaxed">
           From ready-made wigs to premium hair care essentials, our collections
           are carefully selected to meet the needs of every customer. Whether
@@ -42,7 +42,7 @@ const About = () => {
           <img
   src={founderImg}
   alt="Founder"
-  className="w-72 h-72 object-contain rounded-full shadow-lg border-4 border-pink-500 bg-white"
+  className="w-72 h-72 object-contain rounded-full shadow-lg border-4 border-primary-500 bg-neutral-100"
 />
 
 
@@ -50,7 +50,7 @@ const About = () => {
 
         {/* Text */}
         <div className="w-full md:w-2/3">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <h2 className="text-2xl font-bold text-neutral-800 mb-2">
             Meet Our Founder
           </h2>
           <p className="text-gray-600 leading-relaxed">

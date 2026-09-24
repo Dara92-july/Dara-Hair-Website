@@ -40,7 +40,7 @@ const ProductDetail = () => {
       <p className="font-semibold text-pink-600 mt-2">₦{parseFloat(product.price) || 0}</p>
       <button
         onClick={() => dispatch(addToCart(product))}
-        className="bg-green-500 text-white px-4 py-2 mt-2"
+        className="bg-primary-600 text-white px-4 py-2 mt-2"
       >
         Add to Cart
       </button>

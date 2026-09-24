@@ -27,33 +27,33 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-gray-100 shadow-md">
+      <nav className="bg-neutral-100 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <img src={logo} alt="Logo" className="w-8 h-8 rounded-full" />
-            <Link to="/" className="text-xl font-bold hover:text-pink-500">Dara Hair</Link>
+            <Link to="/" className="text-xl font-bold hover:text-primary-600">Dara Hair</Link>
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="hover:text-pink-500">Home</Link>
-            <Link to="/about" className="hover:text-pink-500">About</Link>
+            <Link to="/" className="hover:text-primary-600">Home</Link>
+            <Link to="/about" className="hover:text-primary-600">About</Link>
             <div className="relative">
-              <button onClick={toggleDropdown} className="hover:text-pink-500 focus:outline-none">
+              <button onClick={toggleDropdown} className="hover:text-primary-600 focus:outline-none">
                 Shop by Categories
               </button>
               {isDropdownOpen && (
-                <div className="absolute top-8 left-0 w-48 bg-white shadow-lg border rounded z-50">
-                  <Link to="/category/braided-wig" className="block px-4 py-2 hover:bg-pink-100">Braided Wig</Link>
-                  <Link to="/category/curly-wig" className="block px-4 py-2 hover:bg-pink-100">Curly Wig</Link>
-                  <Link to="/category/straight-wig" className="block px-4 py-2 hover:bg-pink-100">Straight Wig</Link>
-                  <Link to="/category/hair-products" className="block px-4 py-2 hover:bg-pink-100">Hair Products</Link>
-                  <Link to="/category/tools" className="block px-4 py-2 hover:bg-pink-100">Tools</Link>
-                  <Link to="/category/others" className="block px-4 py-2 hover:bg-pink-100">Others</Link>
+                <div className="absolute top-8 left-0 w-48 bg-primary-100 shadow-lg border rounded z-50">
+                  <Link to="/category/braided-wig" className="block px-4 py-2 hover:bg-primary-100">Braided Wig</Link>
+                  <Link to="/category/curly-wig" className="block px-4 py-2 hover:bg-primary-100">Curly Wig</Link>
+                  <Link to="/category/straight-wig" className="block px-4 py-2 hover:bg-primary-100">Straight Wig</Link>
+                  <Link to="/category/hair-products" className="block px-4 py-2 hover:bg-primary-100">Hair Products</Link>
+                  <Link to="/category/tools" className="block px-4 py-2 hover:bg-primary-100">Tools</Link>
+                  <Link to="/category/others" className="block px-4 py-2 hover:bg-primary-100">Others</Link>
                 </div>
               )}
             </div>
             {user && (
-              <Link to="/profile" className="hover:text-pink-500">Profile</Link>
+              <Link to="/profile" className="hover:text-primary-600">Profile</Link>
             )}
             <Link to="/cart" className="relative">
               <img src={cartIcon} alt="Cart" className="w-6 h-6" />
@@ -73,7 +73,7 @@ const Navbar = () => {
         </div>
 
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white shadow p-4 space-y-2">
+          <div className="md:hidden bg-neutral-100 shadow p-4 space-y-2">
             <Link to="/" className="block hover:text-pink-500">Home</Link>
             <Link to="/about" className="block hover:text-pink-500">About</Link>
             <div>

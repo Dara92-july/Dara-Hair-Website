@@ -25,16 +25,16 @@ const Cart = () => {
                 <p>₦{item.price} x {item.quantity} = ₦{item.price * item.quantity}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <button
-                    className="px-2 bg-gray-200"
+                    className="px-2 bg-neutral-200"
                     onClick={() => dispatch(decreaseQuantity(item.id))}
                   >-</button>
                   <span>{item.quantity}</span>
                   <button
-                    className="px-2 bg-gray-200"
+                    className="px-2 bg-neutral-200"
                     onClick={() => dispatch(increaseQuantity(item.id))}
                   >+</button>
                   <button
-                    className="ml-4 text-red-500"
+                    className="ml-4 text-primary-600"
                     onClick={() => dispatch(removeFromCart(item.id))}
                   >Remove</button>
                 </div>
