@@ -32,8 +32,9 @@ const Home = () => {
 <Link
               to="/shop"
               className="bg-primary-600 px-6 py-3 rounded-lg text-white hover:bg-primary-700 transition"
-            Shop Now
-          </Link>
+            >
+              Shop Now
+            </Link>
         </div>
       </section>
 
