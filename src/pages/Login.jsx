@@ -21,6 +21,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -30,6 +31,7 @@ const Login = () => {
           .oneOf([Yup.ref("password")], "Passwords must match")
           .required("Confirm Password is required")
       : Yup.string().notRequired(),
+    name: Yup.string().required("Required"),
   });
 
   const formik = useFormik({
@@ -37,70 +39,112 @@ const Login = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      name: "",
     },
     validationSchema,
-   onSubmit: async ({ email, password }) => {
-  try {
-    let userCredential;
+   onSubmit: async ({ email, password, name }) => {
+    setIsSubmitting(true);
+    try {
+      let userCredential;
 
-    if (isLogin) {
-      // 🔐 Login
-      userCredential = await signInWithEmailAndPassword(auth, email, password);
-    } else if (isGuestCheckout) {
-      // 👤 Guest checkout - no account created
-      // Use a temporary guest ID
-      const guestId = "guest_" + Date.now();
-      navigate("/checkout");
-      return;
-    } else {
-      // 🆕 Signup
-      userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    }
-
-    const uid = userCredential?.user?.uid;
-
-    // 🔁 Check if cart exists in Firestore (only for registered users)
-    if (!isGuestCheckout && uid) {
-      const cartRef = doc(db, "carts", uid);
-      const cartDoc = await getDoc(cartRef);
-
-      if (cartDoc.exists()) {
-        // 👇 Firestore cart found → Replace Redux cart
-        const userCart = cartDoc.data().items || [];
-        dispatch(setCart(userCart));
+      if (isLogin) {
+        // 🔐 Login
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      } else if (isGuestCheckout) {
+        // 👤 Guest checkout - no account created
+        // Use a temporary guest ID
+        const guestId = "guest_" + Date.now();
+        navigate("/checkout");
+        setIsSubmitting(false);
+        return;
       } else {
-        // ⬆️ No Firestore cart → Save current Redux cart
-        await setDoc(cartRef, { items: cart });
-      }
-    }
+        // 🆕 Signup - create user and profile
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-    navigate("/checkout");
-  } catch (err) {
-    alert(err.message);
+        // Create user profile in Firestore with name
+        const uid = userCredential.user.uid;
+        await setDoc(doc(db, "users", uid), {
+          uid,
+          email,
+          name,
+          createdAt: new Date(),
+          orders: [],
+          wishlist: [],
+        });
+      }
+
+      const uid = userCredential?.user?.uid;
+
+      // 🔁 Check if cart exists in Firestore (only for registered users)
+      if (!isGuestCheckout && uid) {
+        const cartRef = doc(db, "carts", uid);
+        const cartDoc = await getDoc(cartRef);
+
+        if (cartDoc.exists()) {
+          // 👇 Firestore cart found → Replace Redux cart
+          const userCart = cartDoc.data().items || [];
+          dispatch(setCart(userCart));
+        } else {
+          // ⬆️ No Firestore cart → Save current Redux cart
+          await setDoc(cartRef, { items: cart });
+        }
+      }
+
+      navigate("/checkout");
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
+  });
   });
 
-  return (
+return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-50 p-4">
       <form
         onSubmit={formik.handleSubmit}
         className="w-full max-w-sm bg-neutral-100 p-6 rounded shadow"
       >
         <h2 className="text-xl font-bold mb-4">{isLogin ? "Login" : isGuestCheckout ? "Guest Checkout" : "Sign Up"}</h2>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="border p-2 w-full mb-2 rounded"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-        />
-        {formik.errors.email && formik.touched.email && (
-          <div className="text-red-500 text-sm mb-2">{formik.errors.email}</div>
+        
+        {/* Email */}
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="border p-2 w-full rounded"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+          />
+          {formik.errors.email && formik.touched.email && (
+            <div className="text-red-500 text-sm mb-2">{formik.errors.email}</div>
+          )}
+        </div>
+        
+        {/* Name - shown only for signup */}
+        {isLogin || isGuestCheckout ? null : (
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              className="border p-2 w-full rounded"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+            />
+            {formik.errors.name && formik.touched.name && (
+              <div className="text-red-500 text-sm mb-2">{formik.errors.name}</div>
+            )}
+          </div>
         )}
-
-        <div className="relative mb-2">
+        
+        {/* Password */}
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
           <input
             type={showPassword ? "text" : "password"}
             name="password"
@@ -109,19 +153,15 @@ const Login = () => {
             value={formik.values.password}
             onChange={formik.handleChange}
           />
-          <div
-            className="absolute right-3 top-3 cursor-pointer"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </div>
+          {formik.errors.password && formik.touched.password && (
+            <div className="text-red-500 text-sm mb-2">{formik.errors.password}</div>
+          )}
         </div>
-        {formik.errors.password && formik.touched.password && (
-          <div className="text-red-500 text-sm mb-2">{formik.errors.password}</div>
-        )}
-
-        {!isLogin && (
-          <div className="relative mb-2">
+        
+        {/* Confirm Password - shown only for signup */}
+        {!isLogin && !isGuestCheckout && (
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
               type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
@@ -130,14 +170,8 @@ const Login = () => {
               value={formik.values.confirmPassword}
               onChange={formik.handleChange}
             />
-            <div
-              className="absolute right-3 top-3 cursor-pointer"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </div>
             {formik.errors.confirmPassword && formik.touched.confirmPassword && (
-              <div className="text-red-500 text-sm mt-1">{formik.errors.confirmPassword}</div>
+              <div className="text-red-500 text-sm mb-2">{formik.errors.confirmPassword}</div>
             )}
           </div>
         )}
