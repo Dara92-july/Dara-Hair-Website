@@ -17,7 +17,7 @@ const loadPaystackScript = () => {
   }
 };
 
-const Checkout = () => {
+const Checkout = ({fromGuestCheckout = false}) => {
   const dispatch = useDispatch();
   const [user, setUser] = useState(null);
   const [cartItems, setCartItems] = useState([]);
@@ -26,15 +26,20 @@ const Checkout = () => {
   useEffect(() => {
     loadPaystackScript();
 
+    // Check if guest checkout was selected (set in Login component via localStorage)
+    const guestCheckout = localStorage.getItem("guestCheckout") === "true";
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
+      // If guest checkout mode is active, allow proceeding without user auth
+      if (!currentUser && !guestCheckout) {
         navigate("/login");
         return;
       }
 
-      setUser(currentUser);
+      setUser(guestCheckout ? null : currentUser);
 
-      const cartRef = doc(db, "carts", currentUser.uid);
+      const userId = guestCheckout ? "guest_" + Date.now() : (currentUser?.uid || "guest_" + Date.now());
+      const cartRef = doc(db, "carts", userId);
       const cartSnap = await getDoc(cartRef);
       const localCart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -57,19 +62,25 @@ const Checkout = () => {
         dispatch(setCart(localCart));
       }
 
-      localStorage.removeItem("cart");
+      // Only remove local cart for registered users, not guests
+      if (currentUser && !guestCheckout) {
+        localStorage.removeItem("cart");
+      }
     });
 
     return () => unsubscribe();
-  }, [navigate, dispatch]);
+  }, [navigate, dispatch, guestCheckout]);
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const handlePayment = () => {
-    if (!user) {
+    if (!user && !fromGuestCheckout) {
       navigate("/login");
       return;
     }
+
+    const paystackEmail = user?.email || "guest@darahair.ng";
+    const userId = user?.uid || "guest_" + Date.now();
 
     if (!window.PaystackPop) {
       alert("⚠️ Payment system not loaded yet. Please wait and try again.");
@@ -78,7 +89,7 @@ const Checkout = () => {
 
     const handler = window.PaystackPop.setup({
       key: "pk_test_e2d1c9c3a0bb4edfd98f85dc1dc7c0a2c324e57f",
-      email: user.email,
+      email: paystackEmail,
       amount: total * 100,
       currency: "NGN",
       callback: function (response) {
@@ -87,8 +98,8 @@ const Checkout = () => {
           try {
             const txRef = collection(db, "transactions");
             await addDoc(txRef, {
-              userId: user.uid,
-              email: user.email,
+              userId: userId,
+              email: paystackEmail,
               amount: total,
               cartItems,
               reference: response.reference,

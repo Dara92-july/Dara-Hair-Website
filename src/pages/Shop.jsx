@@ -3,19 +3,29 @@ import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase.js";
 import ProductCard from "../components/ProductCard";
+import { useParams } from "react-router-dom";
 
 const Shop = () => {
+  const { category } = useParams();
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       const snapshot = await getDocs(collection(db, "products"));
       const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setProducts(items);
+      
+      // Filter by category if specified
+      let filteredItems = items;
+      if (category && category !== "all") {
+        filteredItems = items.filter(
+          (item) => item.category === category
+        );
+      }
+      setProducts(filteredItems);
     };
 
     fetchProducts();
-  }, []);
+  }, [category]);
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">

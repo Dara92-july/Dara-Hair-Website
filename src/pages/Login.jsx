@@ -17,6 +17,7 @@ const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
@@ -45,24 +46,32 @@ const Login = () => {
     if (isLogin) {
       // 🔐 Login
       userCredential = await signInWithEmailAndPassword(auth, email, password);
+    } else if (isGuestCheckout) {
+      // 👤 Guest checkout - no account created
+      // Use a temporary guest ID
+      const guestId = "guest_" + Date.now();
+      navigate("/checkout");
+      return;
     } else {
       // 🆕 Signup
       userCredential = await createUserWithEmailAndPassword(auth, email, password);
     }
 
-    const uid = userCredential.user.uid;
+    const uid = userCredential?.user?.uid;
 
-    // 🔁 Check if cart exists in Firestore
-    const cartRef = doc(db, "carts", uid);
-    const cartDoc = await getDoc(cartRef);
+    // 🔁 Check if cart exists in Firestore (only for registered users)
+    if (!isGuestCheckout && uid) {
+      const cartRef = doc(db, "carts", uid);
+      const cartDoc = await getDoc(cartRef);
 
-    if (cartDoc.exists()) {
-      // 👇 Firestore cart found → Replace Redux cart
-      const userCart = cartDoc.data().items || [];
-      dispatch(setCart(userCart));
-    } else {
-      // ⬆️ No Firestore cart → Save current Redux cart
-      await setDoc(cartRef, { items: cart });
+      if (cartDoc.exists()) {
+        // 👇 Firestore cart found → Replace Redux cart
+        const userCart = cartDoc.data().items || [];
+        dispatch(setCart(userCart));
+      } else {
+        // ⬆️ No Firestore cart → Save current Redux cart
+        await setDoc(cartRef, { items: cart });
+      }
     }
 
     navigate("/checkout");
@@ -78,7 +87,7 @@ const Login = () => {
         onSubmit={formik.handleSubmit}
         className="w-full max-w-sm bg-neutral-100 p-6 rounded shadow"
       >
-        <h2 className="text-xl font-bold mb-4">{isLogin ? "Login" : "Sign Up"}</h2>
+        <h2 className="text-xl font-bold mb-4">{isLogin ? "Login" : isGuestCheckout ? "Guest Checkout" : "Sign Up"}</h2>
         <input
           type="email"
           name="email"
@@ -146,6 +155,43 @@ const Login = () => {
         >
           {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
         </p>
+
+        {isLogin && (
+          <div className="mt-4 p-3 bg-neutral-100 rounded border text-sm">
+            <input
+              type="radio"
+              name="checkout-type"
+              id="guest-checkout"
+              value="guest"
+              checked={isGuestCheckout}
+              onChange={() => {
+                setIsGuestCheckout(true);
+                localStorage.setItem("guestCheckout", "true");
+                navigate("/checkout");
+              }}
+              className="mr-2"
+            />
+            <label htmlFor="guest-checkout" className="ml-2">
+              Continue as guest (no account, can't track orders)
+            </label>
+            <input
+              type="radio"
+              name="checkout-type"
+              id="account-checkout"
+              value="account"
+              checked={!isGuestCheckout && isLogin}
+              onChange={() => {
+                setIsGuestCheckout(false);
+                localStorage.removeItem("guestCheckout");
+                navigate("/checkout");
+              }}
+              className="mr-2"
+            />
+            <label htmlFor="account-checkout">
+              Create account to track orders
+            </label>
+          </div>
+        )}
       </form>
     </div>
   );
