@@ -4,7 +4,7 @@ import { updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { LogOut, User, Mail, Shield } from "lucide-react";
 
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContexts.jsx";
 import { db } from "../firebase/firebase.js";
 
 const Profile = () => {

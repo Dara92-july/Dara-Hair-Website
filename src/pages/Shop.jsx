@@ -1,83 +1,136 @@
 // pages/Shop.jsx
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase.js";
 import ProductCard from "../components/ProductCard";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const Shop = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState({});
   const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     const fetchProducts = async () => {
-      let q = query(collection(db, "products"));
-      
-      // Apply category filter
-      if (category && category !== "all") {
-        q = query(q, where("category", "==", category));
-      }
-      
-      // Apply search filter (client-side since Firestore doesn't support full-text search easily)
-      let filteredItems = [];
-      
-      // Apply sort and fetch
-      if (sortBy === "price-low") {
-        q = query(q, orderBy("variants.price", "asc"));
-      } else if (sortBy === "price-high") {
-        q = query(q, orderBy("variants.price", "desc"));
-      } else if (sortBy === "most-popular") {
-        q = query(q, orderBy("rating", "desc"));
-      } else {
-        q = query(q, orderBy("createdAt", "desc"));
-      }
-      
-      const snapshot = await getDocs(q);
-      filteredItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      
-      // Apply client-side search filter
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filteredItems = filteredItems.filter(
-          (item) =>
-            item.name.toLowerCase().includes(lowerQuery) ||
-            (item.description && item.description.toLowerCase().includes(lowerQuery)) ||
-            (item.category && item.category.toLowerCase().includes(lowerQuery))
-        );
-      }
-      
-      // Apply client-side filters
-      if (Object.keys(selectedFilters).length > 0) {
-        filteredItems = filteredItems.filter((item) => {
-          let matches = true;
-          if (selectedFilters.texture && item.texture !== selectedFilters.texture) {
-            matches = false;
+      setLoading(true);
+      try {
+        // Fetch base collection (filters and sorts applied safely client-side)
+        const snapshot = await getDocs(collection(db, "products"));
+        let fetchedItems = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // 1. Apply category filter
+        if (category && category !== "all") {
+          fetchedItems = fetchedItems.filter(
+            (item) => item.category === category
+          );
+        }
+
+        // 2. Apply search query filter
+        if (searchQuery.trim()) {
+          const lowerQuery = searchQuery.toLowerCase();
+          fetchedItems = fetchedItems.filter(
+            (item) =>
+              item.name?.toLowerCase().includes(lowerQuery) ||
+              item.description?.toLowerCase().includes(lowerQuery) ||
+              item.category?.toLowerCase().includes(lowerQuery)
+          );
+        }
+
+        // 3. Apply custom client-side filters
+        if (Object.keys(selectedFilters).length > 0) {
+          fetchedItems = fetchedItems.filter((item) => {
+            let matches = true;
+
+            if (selectedFilters.texture && item.texture !== selectedFilters.texture) {
+              matches = false;
+            }
+
+            if (
+              selectedFilters.length &&
+              !item.variants?.some((v) => v.length === selectedFilters.length)
+            ) {
+              matches = false;
+            }
+
+            // Calculate min/max price considering variants or base price
+            const minProductPrice =
+              item.variants?.length > 0
+                ? Math.min(...item.variants.map((v) => v.price || Infinity))
+                : item.price || 0;
+
+            if (
+              selectedFilters.minPrice !== undefined &&
+              minProductPrice < selectedFilters.minPrice
+            ) {
+              matches = false;
+            }
+
+            if (
+              selectedFilters.maxPrice !== undefined &&
+              minProductPrice > selectedFilters.maxPrice
+            ) {
+              matches = false;
+            }
+
+            if (selectedFilters.availableOnly) {
+              const hasStock =
+                item.variants?.some((v) => (v.stock || 0) > 0) ||
+                (item.stock || 0) > 0;
+              if (!hasStock) matches = false;
+            }
+
+            return matches;
+          });
+        }
+
+        // 4. Apply sorting client-side
+        fetchedItems.sort((a, b) => {
+          const getMinPrice = (item) =>
+            item.variants?.length > 0
+              ? Math.min(...item.variants.map((v) => v.price || Infinity))
+              : item.price || 0;
+
+          if (sortBy === "price-low") {
+            return getMinPrice(a) - getMinPrice(b);
+          } else if (sortBy === "price-high") {
+            return getMinPrice(b) - getMinPrice(a);
+          } else if (sortBy === "most-popular") {
+            return (b.rating || 0) - (a.rating || 0);
+          } else {
+            // Default: newest
+            const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0);
+            const dateB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0);
+            return dateB - dateA;
           }
-          if (selectedFilters.length && !item.variants?.some((v) => v.length === selectedFilters.length)) {
-            matches = false;
-          }
-          if (selectedFilters.minPrice !== undefined && (item.variants?.reduce((acc, v) => Math.min(acc, v.price || Infinity), Infinity) || item.price || 0) < selectedFilters.minPrice) {
-            matches = false;
-          }
-          if (selectedFilters.maxPrice !== undefined && (item.variants?.reduce((acc, v) => Math.max(acc, v.price || -Infinity), -Infinity) || item.price || 0) > selectedFilters.maxPrice) {
-            matches = false;
-          }
-          if (selectedFilters.availableOnly) {
-            const hasStock = item.variants?.some((v) => (v.stock || 0) > 0) || (item.stock || 0) > 0;
-            if (!hasStock) matches = false;
-          }
-          return matches;
         });
+
+        setProducts(fetchedItems);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
-      
-      setProducts(filteredItems);
     };
 
     fetchProducts();
-  }, [category, searchQuery, selectedFilters, sortBy]);
+  }, [category, searchQuery, sortBy, JSON.stringify(selectedFilters)]);
+
+  const handleCategoryChange = (e) => {
+    const newCategory = e.target.value;
+    if (newCategory === "all") {
+      navigate("/shop");
+    } else {
+      navigate(`/shop/${newCategory}`);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
@@ -95,13 +148,13 @@ const Shop = () => {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-primary-500"
             />
           </div>
-          
+
           {/* Category Filter */}
           <div>
             <p className="text-sm text-gray-600 mb-1">Category</p>
             <select
-              value={selectedFilters.category || "all"}
-              onChange={(e) => setSelectedFilters({ ...selectedFilters, category: e.target.value })}
+              value={category || "all"}
+              onChange={handleCategoryChange}
               className="w-full px-3 py-2 border rounded"
             >
               <option value="all">All Categories</option>
@@ -113,7 +166,7 @@ const Shop = () => {
               <option value="others">Others</option>
             </select>
           </div>
-          
+
           {/* Sort */}
           <div>
             <p className="text-sm text-gray-600 mb-1">Sort by</p>
@@ -130,9 +183,14 @@ const Shop = () => {
           </div>
         </div>
       </div>
-      
-      <h2 className="text-2xl font-bold text-center mb-6 text-primary-600">All Products</h2>
-      {products.length === 0 ? (
+
+      <h2 className="text-2xl font-bold text-center mb-6 text-primary-600">
+        All Products
+      </h2>
+
+      {loading ? (
+        <p className="text-center text-gray-500">Loading products...</p>
+      ) : products.length === 0 ? (
         <p className="text-center text-gray-500">No products available.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -143,5 +201,6 @@ const Shop = () => {
       )}
     </div>
   );
+};
 
 export default Shop;
