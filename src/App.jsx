@@ -1,36 +1,113 @@
-// App.jsx
 import { Routes, Route } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import ProductDetail from "./pages/ProductDetail";
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import Profile from "./pages/Profile";
 import Shop from "./pages/Shop";
-import Footer from "./components/Footer";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
     <>
       <Navbar />
+
       <Routes>
+        {/* ==================== */}
+        {/* PUBLIC ROUTES */}
+        {/* ==================== */}
+
         <Route path="/" element={<Home />} />
+
         <Route path="/about" element={<About />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
+
         <Route path="/shop" element={<Shop />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/category/:category" element={<Shop />} />
+
+        <Route
+          path="/category/:category"
+          element={<Shop />}
+        />
+
+        <Route
+          path="/product/:id"
+          element={<ProductDetail />}
+        />
+
+        <Route path="/cart" element={<Cart />} />
+
+        {/* Authentication */}
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        />
+
+        {/* ==================== */}
+        {/* CUSTOMER PROTECTED */}
+        {/* ==================== */}
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<Profile />} />
+
+          <Route path="/checkout" element={<Checkout />} />
+
+          {/* We'll add these later */}
+          {/* <Route path="/orders" element={<Orders />} /> */}
+          {/* <Route path="/wishlist" element={<Wishlist />} /> */}
+        </Route>
+
+        {/* ==================== */}
+        {/* ADMIN PROTECTED */}
+        {/* ==================== */}
+
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<Admin />} />
+
+          {/* We'll add these later */}
+          {/* <Route path="/admin/products" element={<AdminProducts />} /> */}
+          {/* <Route path="/admin/orders" element={<AdminOrders />} /> */}
+          {/* <Route path="/admin/customers" element={<AdminCustomers />} /> */}
+        </Route>
+
+        {/* ==================== */}
+        {/* 404 */}
+        {/* ==================== */}
+
+        <Route
+          path="*"
+          element={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-5xl font-bold mb-3">
+                  404
+                </h1>
+
+                <p className="text-neutral-500">
+                  Page not found.
+                </p>
+              </div>
+            </div>
+          }
+        />
       </Routes>
-      <Footer/>
+
+      <Footer />
     </>
   );
 }
+
 export default App;
