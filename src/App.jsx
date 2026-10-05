@@ -1,11 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+
+import { Routes, Route, Outlet } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
-// import Admin from "./pages/Admin";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -17,21 +17,43 @@ import Shop from "./pages/Shop";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+
+import AdminLayout from "./pages/admin/AdminLayout";
 import AdminProducts from "./pages/admin/products/AdminProducts";
 import AdminCategories from "./pages/admin/categories/AdminCategories";
 import AdminCustomers from "./pages/admin/customers/AdminCustomers";
 import AdminOrders from "./pages/admin/orders/AdminOrders";
 import AdminDashboard from "./pages/admin/dashboard/AdminDashboard";
 
-function App() {
+/* ========================= */
+/* WEBSITE LAYOUT */
+/* ========================= */
+
+const WebsiteLayout = () => {
   return (
     <>
       <Navbar />
 
-      <Routes>
-        {/* ==================== */}
+      <Outlet />
+
+      <Footer />
+    </>
+  );
+};
+
+/* ========================= */
+/* APP */
+/* ========================= */
+
+function App() {
+  return (
+    <Routes>
+      {/* ================================= */}
+      {/* NORMAL WEBSITE */}
+      {/* ================================= */}
+
+      <Route element={<WebsiteLayout />}>
         {/* PUBLIC ROUTES */}
-        {/* ==================== */}
 
         <Route path="/" element={<Home />} />
 
@@ -51,7 +73,8 @@ function App() {
 
         <Route path="/cart" element={<Cart />} />
 
-        {/* Authentication */}
+        {/* AUTHENTICATION */}
+
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
@@ -61,55 +84,65 @@ function App() {
           element={<ForgotPassword />}
         />
 
-        {/* ==================== */}
         {/* CUSTOMER PROTECTED */}
-        {/* ==================== */}
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
-
-          <Route path="/checkout" element={<Checkout />} />
-
-          {/* We'll add these later */}
-          {/* <Route path="/orders" element={<Orders />} /> */}
-          {/* <Route path="/wishlist" element={<Wishlist />} /> */}
         </Route>
-
-        {/* ==================== */}
-        {/* ADMIN PROTECTED */}
-        {/* ==================== */}
-
-       <Route path="/admin" element={<AdminRoute />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="customers" element={<AdminCustomers />} />
-        <Route path="orders" element={<AdminOrders />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Route>
-        {/* ==================== */}
-        {/* 404 */}
-        {/* ==================== */}
 
-        <Route
-          path="*"
-          element={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-5xl font-bold mb-3">
-                  404
-                </h1>
+      {/* ================================= */}
+      {/* ADMIN */}
+      {/* ================================= */}
 
-                <p className="text-neutral-500">
-                  Page not found.
-                </p>
-              </div>
+      <Route path="/admin" element={<AdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+
+          <Route
+            path="products"
+            element={<AdminProducts />}
+          />
+
+          <Route
+            path="categories"
+            element={<AdminCategories />}
+          />
+
+          <Route
+            path="customers"
+            element={<AdminCustomers />}
+          />
+
+          <Route
+            path="orders"
+            element={<AdminOrders />}
+          />
+        </Route>
+      </Route>
+
+      {/* ================================= */}
+      {/* 404 */}
+      {/* ================================= */}
+
+      <Route
+        path="*"
+        element={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-5xl font-bold mb-3">
+                404
+              </h1>
+
+              <p className="text-neutral-500">
+                Page not found.
+              </p>
             </div>
-          }
-        />
-      </Routes>
-
-      <Footer />
-    </>
+          </div>
+        }
+      />
+    </Routes>
   );
 }
 

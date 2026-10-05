@@ -16,8 +16,14 @@ const AdminRoute = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  return (
+    <Navigate
+      to="/login"
+      state={{ from: location.pathname }}
+      replace
+    />
+  );
+}
 
   if (profile?.role !== "admin") {
     return <Navigate to="/" replace />;
