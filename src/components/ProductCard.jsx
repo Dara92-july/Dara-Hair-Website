@@ -1,67 +1,183 @@
 import { Link } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../store/slice";
 
 const ProductCard = ({
   id,
   name,
-  imageUrl,
+  images = [],
   price,
+  discountPrice,
   description,
-  variants = [],
+  stockQuantity,
 }) => {
-  const hasVariants = variants && variants.length > 0;
-  const firstVariant = variants[0] || {};
+  const dispatch = useDispatch();
+
+  const imageUrl = images?.[0] || "";
+
+  const regularPrice = Number(price || 0) / 100;
+
+  const salePrice = discountPrice
+    ? Number(discountPrice) / 100
+    : null;
+
+  const stock = Number(stockQuantity || 0);
+
+  const isOutOfStock = stock <= 0;
+
+  const handleAddToCart = () => {
+    if (isOutOfStock) return;
+
+    const cartItem = {
+      id,
+      name,
+
+      price: discountPrice
+        ? Number(discountPrice)
+        : Number(price),
+
+      imageUrl,
+
+      quantity: 1,
+    };
+
+    dispatch(addToCart(cartItem));
+  };
 
   return (
-    <div className="bg-neutral-100 shadow-md rounded-lg overflow-hidden hover:shadow-xl transition duration-300">
-      {/* Product Image */}
-      <Link to={`/product/${id}`}>
-        <img
-          src={imageUrl}
-          alt={name}
-          className="w-full h-56 object-cover group-hover:scale-105 transition duration-300"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
-          }}
-        />
+    <div className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg">
+
+      {/* =========================
+          PRODUCT IMAGE
+      ========================= */}
+
+      <Link
+        to={`/product/${id}`}
+        className="block overflow-hidden bg-gray-100"
+      >
+        <div className="relative h-56 w-full sm:h-64">
+
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  "https://via.placeholder.com/600x600?text=No+Image";
+              }}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              No Image Available
+            </div>
+          )}
+
+          {/* OUT OF STOCK BADGE */}
+
+          {isOutOfStock && (
+            <div className="absolute left-3 top-3 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+              Out of Stock
+            </div>
+          )}
+
+          {/* DISCOUNT BADGE */}
+
+          {salePrice && (
+            <div className="absolute right-3 top-3 rounded-full bg-primary-600 px-3 py-1 text-xs font-semibold text-white">
+              Sale
+            </div>
+          )}
+
+        </div>
       </Link>
 
-      {/* Product Details */}
-      <div className="p-4">
-        <h2 className="text-lg font-semibold truncate">{name}</h2>
-        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{description}</p>
+      {/* =========================
+          PRODUCT DETAILS
+      ========================= */}
 
-        {/* Variants Section */}
-        {hasVariants && (
-          <div className="mt-2 space-y-1 text-sm">
-            <p className="font-medium text-gray-700">Select Options:</p>
-            <div className="grid grid-cols-2 gap-1">
-              {variants.map((variant, i) => (
-                <div
-                  key={i}
-                  className="
-                    border rounded p-1 cursor-pointer
-                    bg-primary-100 text-primary-800 select-none
-                  "
-                >
-                  {variant.length || variant.texture || variant.laceType || variant.density || `Option ${i + 1}`}
-                </div>
-              ))}
+      <div className="flex flex-1 flex-col p-4">
+
+        {/* NAME */}
+
+        <Link to={`/product/${id}`}>
+          <h2 className="truncate text-base font-semibold text-gray-900 transition hover:text-primary-600 sm:text-lg">
+            {name}
+          </h2>
+        </Link>
+
+        {/* DESCRIPTION */}
+
+        <p className="mt-1 line-clamp-2 min-h-[40px] text-sm text-gray-500">
+          {description || "Premium quality hair."}
+        </p>
+
+        {/* PRICE */}
+
+        <div className="mt-3">
+
+          {salePrice ? (
+            <div className="flex flex-wrap items-center gap-2">
+
+              <span className="text-lg font-bold text-primary-600">
+                ₦{salePrice.toLocaleString()}
+              </span>
+
+              <span className="text-sm text-gray-400 line-through">
+                ₦{regularPrice.toLocaleString()}
+              </span>
+
             </div>
-          </div>
+          ) : (
+            <span className="text-lg font-bold text-primary-600">
+              ₦{regularPrice.toLocaleString()}
+            </span>
+          )}
+
+        </div>
+
+        {/* STOCK */}
+
+        {!isOutOfStock && (
+          <p className="mt-2 text-xs font-medium text-green-600">
+            {stock} available
+          </p>
         )}
 
-        <div className="flex justify-between items-center mt-4">
-          <p className="font-bold text-primary-600">
-            {firstVariant.price !== undefined ? `₦{parseFloat(firstVariant.price)}` : `₦{parseFloat(price) || 0}`}
-          </p>
+        {/* =========================
+            BUTTONS
+        ========================= */}
+
+        <div className="mt-auto flex flex-col gap-2 pt-4">
+
+          {/* ADD TO CART */}
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+          >
+            <ShoppingCart size={17} />
+
+            {isOutOfStock
+              ? "Out of Stock"
+              : "Add to Cart"}
+          </button>
+
+          {/* VIEW DETAILS */}
+
           <Link
             to={`/product/${id}`}
-            className="bg-primary-600 text-white text-sm px-3 py-1 rounded-md hover:bg-primary-700 transition"
+            className="flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
           >
             View Details
           </Link>
+
         </div>
+
       </div>
     </div>
   );

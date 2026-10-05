@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase.js";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../store/slice";
+import { ShoppingCart } from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -12,32 +13,25 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [selectedOptions, setSelectedOptions] = useState({
-    length: "",
-    texture: "",
-    laceType: "",
-    density: "",
-  });
+
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const docSnap = await getDoc(doc(db, "products", id));
-        if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() };
-          setProduct(data);
 
-          // Auto-select first variant options if variants exist
-          if (data.variants && data.variants.length > 0) {
-            const first = data.variants[0];
-            setSelectedOptions({
-              length: first.length || "",
-              texture: first.texture || "",
-              laceType: first.laceType || "",
-              density: first.density || "",
-            });
-          }
+        const productRef = doc(db, "products", id);
+
+        const docSnap = await getDoc(productRef);
+
+        if (docSnap.exists()) {
+          const data = {
+            id: docSnap.id,
+            ...docSnap.data(),
+          };
+
+          setProduct(data);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -46,246 +40,232 @@ const ProductDetail = () => {
       }
     };
 
-    if (id) fetchProduct();
+    if (id) {
+      fetchProduct();
+    }
   }, [id]);
 
-  const variants = product?.variants || [];
-  const hasVariants = variants.length > 0;
-
-  // Deduplicate option lists for cleaner UI rendering
-  const availableLengths = useMemo(
-    () => [...new Set(variants.map((v) => v.length).filter(Boolean))],
-    [variants]
-  );
-  const availableTextures = useMemo(
-    () => [...new Set(variants.map((v) => v.texture).filter(Boolean))],
-    [variants]
-  );
-  const availableLaceTypes = useMemo(
-    () => [...new Set(variants.map((v) => v.laceType).filter(Boolean))],
-    [variants]
-  );
-  const availableDensities = useMemo(
-    () => [...new Set(variants.map((v) => v.density).filter(Boolean))],
-    [variants]
-  );
-
-  // Find exact active variant based on selected dropdown/button choices
-  const matchedVariant = useMemo(() => {
-    if (!hasVariants) return null;
+  if (loading) {
     return (
-      variants.find(
-        (v) =>
-          (!v.length || v.length === selectedOptions.length) &&
-          (!v.texture || v.texture === selectedOptions.texture) &&
-          (!v.laceType || v.laceType === selectedOptions.laceType) &&
-          (!v.density || v.density === selectedOptions.density)
-      ) || variants[0]
+      <div className="p-6 text-center text-gray-500">
+        Loading product details...
+      </div>
     );
-  }, [variants, selectedOptions, hasVariants]);
+  }
 
-  // Determine current active price
-  const currentPrice = useMemo(() => {
-    if (hasVariants) {
-      return matchedVariant?.price || 0;
-    }
-    return product?.price || 0;
-  }, [hasVariants, matchedVariant, product]);
+  if (!product) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Product not found.
+      </div>
+    );
+  }
 
-  const handleOptionChange = (key, value) => {
-    setSelectedOptions((prev) => ({ ...prev, [key]: value }));
-  };
+  // =========================
+  // IMAGES
+  // =========================
+
+  const images = product.images || [];
+
+  const currentImage = images[selectedImage] || "";
+
+  // =========================
+  // PRICE
+  // =========================
+
+  const regularPrice = Number(product.price || 0) / 100;
+
+  const discountPrice = product.discountPrice
+    ? Number(product.discountPrice) / 100
+    : null;
+
+  const currentPrice = discountPrice || regularPrice;
+
+  // =========================
+  // STOCK
+  // =========================
+
+  const stock = Number(product.stockQuantity || 0);
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (stock <= 0) {
+      return;
+    }
 
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: Number(currentPrice),
-      imageUrl: product.imageUrl || "",
+
+      // Store price in kobo
+      price: discountPrice
+        ? Number(product.discountPrice)
+        : Number(product.price),
+
+      imageUrl: currentImage,
+
       quantity,
-      variantKey: matchedVariant?.variantKey || "default",
-      selectedOptions: hasVariants ? selectedOptions : null,
+
+      selectedOptions: null,
     };
 
     dispatch(addToCart(cartItem));
   };
 
-  if (loading) {
-    return <div className="p-6 text-center text-gray-500">Loading product details...</div>;
-  }
-
-  if (!product) {
-    return <div className="p-6 text-center text-gray-500">Product not found.</div>;
-  }
-
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Product Image */}
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 p-4 md:grid-cols-2 md:p-6">
+      {/* =========================
+          PRODUCT IMAGES
+      ========================= */}
+
       <div>
-        {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-auto rounded-lg object-cover border"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : (
-          <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
-            No Image Available
+        {/* Main Image */}
+
+        <div className="overflow-hidden rounded-lg border bg-gray-100">
+          {currentImage ? (
+            <img
+              src={currentImage}
+              alt={product.name}
+              className="h-[450px] w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="flex h-[450px] items-center justify-center text-gray-400">
+              No Image Available
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnail Images */}
+
+        {images.length > 1 && (
+          <div className="mt-4 grid grid-cols-4 gap-3">
+            {images.map((image, index) => (
+              <button
+                key={`${image}-${index}`}
+                type="button"
+                onClick={() => setSelectedImage(index)}
+                className={`overflow-hidden rounded-lg border-2 ${
+                  selectedImage === index
+                    ? "border-primary-600"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  className="h-24 w-full object-cover"
+                />
+              </button>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Product Details & Purchase Form */}
-      <div className="flex flex-col space-y-4">
-        <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-        <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
+      {/* =========================
+          PRODUCT INFORMATION
+      ========================= */}
 
-        {/* Dynamic Price Display */}
-        <div className="text-2xl font-bold text-primary-600">
-          ₦{Number(currentPrice).toLocaleString()}
+      <div className="flex flex-col space-y-5">
+        <div>
+          <p className="mb-2 text-sm uppercase tracking-wide text-gray-500">
+            {product.category}
+          </p>
+
+          <h1 className="text-3xl font-bold text-gray-900">
+            {product.name}
+          </h1>
         </div>
 
-        {/* Options Selection */}
-        {hasVariants && (
-          <div className="space-y-4 pt-2 border-t">
-            {/* Length */}
-            {availableLengths.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Length
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {availableLengths.map((len) => (
-                    <button
-                      key={len}
-                      type="button"
-                      onClick={() => handleOptionChange("length", len)}
-                      className={`px-3 py-1.5 text-sm rounded border transition ${
-                        selectedOptions.length === len
-                          ? "bg-primary-600 text-white border-primary-600"
-                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      {len}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        <p className="text-sm leading-relaxed text-gray-600">
+          {product.description}
+        </p>
 
-            {/* Texture */}
-            {availableTextures.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Texture
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {availableTextures.map((tex) => (
-                    <button
-                      key={tex}
-                      type="button"
-                      onClick={() => handleOptionChange("texture", tex)}
-                      className={`px-3 py-1.5 text-sm rounded border transition ${
-                        selectedOptions.texture === tex
-                          ? "bg-primary-600 text-white border-primary-600"
-                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      {tex}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* Price */}
 
-            {/* Lace Type */}
-            {availableLaceTypes.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Lace Type
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {availableLaceTypes.map((lace) => (
-                    <button
-                      key={lace}
-                      type="button"
-                      onClick={() => handleOptionChange("laceType", lace)}
-                      className={`px-3 py-1.5 text-sm rounded border transition ${
-                        selectedOptions.laceType === lace
-                          ? "bg-primary-600 text-white border-primary-600"
-                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      {lace}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        <div>
+          {discountPrice ? (
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-bold text-primary-600">
+                ₦{discountPrice.toLocaleString()}
+              </span>
 
-            {/* Density */}
-            {availableDensities.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Density
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {availableDensities.map((den) => (
-                    <button
-                      key={den}
-                      type="button"
-                      onClick={() => handleOptionChange("density", den)}
-                      className={`px-3 py-1.5 text-sm rounded border transition ${
-                        selectedOptions.density === den
-                          ? "bg-primary-600 text-white border-primary-600"
-                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      {den}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              <span className="text-lg text-gray-400 line-through">
+                ₦{regularPrice.toLocaleString()}
+              </span>
+            </div>
+          ) : (
+            <span className="text-2xl font-bold text-primary-600">
+              ₦{regularPrice.toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        {/* Stock */}
+
+        {stock > 0 ? (
+          <p className="text-sm font-medium text-green-600">
+            {stock} available
+          </p>
+        ) : (
+          <p className="text-sm font-medium text-red-600">
+            Out of stock
+          </p>
+        )}
+
+        {/* Quantity */}
+
+        {stock > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Quantity
+            </p>
+
+            <div className="flex w-32 items-center space-x-3 rounded border p-1">
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded text-lg font-bold hover:bg-gray-100"
+                onClick={() =>
+                  setQuantity((q) => Math.max(1, q - 1))
+                }
+              >
+                -
+              </button>
+
+              <span className="flex-1 text-center font-medium">
+                {quantity}
+              </span>
+
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded text-lg font-bold hover:bg-gray-100"
+                onClick={() =>
+                  setQuantity((q) =>
+                    Math.min(stock, q + 1)
+                  )
+                }
+              >
+                +
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Quantity Controls */}
-        <div className="pt-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-            Quantity
-          </p>
-          <div className="flex items-center space-x-3 w-32 border rounded p-1">
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg font-bold"
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            >
-              -
-            </button>
-            <span className="flex-1 text-center font-medium">{quantity}</span>
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg font-bold"
-              onClick={() => setQuantity((q) => q + 1)}
-            >
-              +
-            </button>
-          </div>
-        </div>
+        {/* Add To Cart */}
 
-        {/* Add to Cart Action */}
-        <button
-          onClick={handleAddToCart}
-          className="mt-6 w-full bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-3 rounded-md transition shadow-sm"
-        >
-          Add to Cart
-        </button>
+        {/* Add To Cart */}
+
+      <button
+        type="button"
+        onClick={handleAddToCart}
+        disabled={stock <= 0}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-6 py-4 text-base font-semibold text-white shadow-md transition duration-200 hover:bg-primary-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+      >
+        <ShoppingCart size={20} />
+
+        {stock <= 0 ? "Out of Stock" : "Add to Cart"}
+      </button>
       </div>
     </div>
   );

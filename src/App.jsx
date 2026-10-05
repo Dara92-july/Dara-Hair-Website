@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Admin from "./pages/Admin";
+// import Admin from "./pages/Admin";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -17,6 +17,11 @@ import Shop from "./pages/Shop";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import AdminProducts from "./pages/admin/products/AdminProducts";
+import AdminCategories from "./pages/admin/categories/AdminCategories";
+import AdminCustomers from "./pages/admin/customers/AdminCustomers";
+import AdminOrders from "./pages/admin/orders/AdminOrders";
+import AdminDashboard from "./pages/admin/dashboard/AdminDashboard";
 
 function App() {
   return (
@@ -74,15 +79,13 @@ function App() {
         {/* ADMIN PROTECTED */}
         {/* ==================== */}
 
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<Admin />} />
-
-          {/* We'll add these later */}
-          {/* <Route path="/admin/products" element={<AdminProducts />} /> */}
-          {/* <Route path="/admin/orders" element={<AdminOrders />} /> */}
-          {/* <Route path="/admin/customers" element={<AdminCustomers />} /> */}
-        </Route>
-
+       <Route path="/admin" element={<AdminRoute />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="customers" element={<AdminCustomers />} />
+        <Route path="orders" element={<AdminOrders />} />
+      </Route>
         {/* ==================== */}
         {/* 404 */}
         {/* ==================== */}

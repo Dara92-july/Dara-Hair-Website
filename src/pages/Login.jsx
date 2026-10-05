@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { Eye, EyeOff } from "lucide-react";
 
-import { auth } from "../firebase/firebase.js";
+import { auth, db } from "../firebase/firebase.js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const from = location.state?.from || "/profile";
+  const from = location.state?.from;
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -40,13 +41,34 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(
+      // 1. Login with Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         formData.email.trim(),
         formData.password
       );
 
-      navigate(from, { replace: true });
+      const user = userCredential.user;
+
+      // 2. Get the user's Firestore document
+      const userRef = doc(db, "users", user.uid);
+      const userSnapshot = await getDoc(userRef);
+
+      // 3. Check whether the user is an admin
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+
+        if (userData.role === "admin") {
+          // 4. Admin goes to admin dashboard
+          navigate("/admin", { replace: true });
+          return;
+        }
+      }
+
+      // 5. Normal user
+      // If they were redirected to login from a protected page,
+      // send them back there. Otherwise, go to profile.
+      navigate(from || "/profile", { replace: true });
     } catch (error) {
       console.error("Login error:", error);
 
