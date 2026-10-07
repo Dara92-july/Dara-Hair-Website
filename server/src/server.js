@@ -1,15 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
 dotenv.config();
 
 const paymentRoutes = require("../routes/paymentRoutes");
 
-const app = express;
+// Make sure express() is called to initialize the app instance
+const app = express();
 
-// Use the payment API URL from env, fallback to default
-const paymentApiUrl = process.env.PAYMENT_API_URL || "https://darahair-payment-server.onrender.com";
-const clientUrl = process.env.CLIENT_URL || new URL(paymentApiUrl).origin;
+const clientUrl = (process.env.CLIENT_URL || "https://dara-hair-website.vercel.app").replace(/\/$/, "");
 
 const corsOptions = {
   origin: clientUrl,
@@ -18,8 +18,17 @@ const corsOptions = {
   credentials: true,
 };
 
-// Global CORS middleware handles both preflight (OPTIONS) and standard requests
+// Global CORS middleware
 app.use(cors(corsOptions));
+
+// Additional CORS headers for debugging and safety
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", clientUrl);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 app.use(express.json());
 
