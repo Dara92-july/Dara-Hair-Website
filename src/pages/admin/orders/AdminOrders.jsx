@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   collection,
   getDocs,
@@ -24,6 +25,9 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updating, setUpdating] = useState(false);
 
+  // =========================
+  // FETCH ORDERS
+  // =========================
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -52,12 +56,36 @@ const AdminOrders = () => {
     fetchOrders();
   }, []);
 
-  const formatPrice = (amount) => {
+  // =========================
+  // FORMAT ORDER TOTAL
+  // IMPORTANT:
+  // order.amount is stored in NAIRA
+  // =========================
+  const formatNaira = (amount) => {
+    return `₦${Number(amount || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}`;
+  };
+
+  // =========================
+  // FORMAT PRODUCT PRICE
+  // IMPORTANT:
+  // item.price is stored in KOBO
+  // =========================
+  const formatKobo = (amount) => {
     return `₦${(Number(amount || 0) / 100).toLocaleString(
-      "en-NG"
+      "en-NG",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }
     )}`;
   };
 
+  // =========================
+  // FORMAT DATE
+  // =========================
   const formatDate = (timestamp) => {
     if (!timestamp?.toDate) return "—";
 
@@ -68,8 +96,12 @@ const AdminOrders = () => {
     });
   };
 
+  // =========================
+  // CUSTOMER NAME
+  // =========================
   const getCustomerName = (order) => {
     return (
+      order.customer?.name ||
       order.customerName ||
       order.userName ||
       order.name ||
@@ -78,25 +110,70 @@ const AdminOrders = () => {
     );
   };
 
+  // =========================
+  // CUSTOMER EMAIL
+  // =========================
+  const getCustomerEmail = (order) => {
+    return (
+      order.customer?.email ||
+      order.email ||
+      "No email"
+    );
+  };
+
+  // =========================
+  // CUSTOMER PHONE
+  // =========================
+  const getCustomerPhone = (order) => {
+    return (
+      order.customer?.phone ||
+      order.phone ||
+      "No phone"
+    );
+  };
+
+  // =========================
+  // CUSTOMER ADDRESS
+  // =========================
+  const getCustomerAddress = (order) => {
+    return (
+      order.customer?.address ||
+      order.address ||
+      "No address provided"
+    );
+  };
+
+  // =========================
+  // SEARCH
+  // =========================
   const filteredOrders = orders.filter((order) => {
     const searchText = search.toLowerCase();
 
     return (
-      order.id.toLowerCase().includes(searchText) ||
+      order.id?.toLowerCase().includes(searchText) ||
+      order.orderNumber?.toLowerCase().includes(searchText) ||
       getCustomerName(order)
         .toLowerCase()
         .includes(searchText) ||
-      order.email?.toLowerCase().includes(searchText) ||
-      order.reference?.toLowerCase().includes(searchText)
+      getCustomerEmail(order)
+        .toLowerCase()
+        .includes(searchText) ||
+      order.paymentReference
+        ?.toLowerCase()
+        .includes(searchText)
     );
   });
 
+  // =========================
+  // UPDATE ORDER STATUS
+  // =========================
   const updateOrderStatus = async (orderId, status) => {
     try {
       setUpdating(true);
 
       await updateDoc(doc(db, "orders", orderId), {
-        status,
+        orderStatus: status,
+        updatedAt: new Date(),
       });
 
       await fetchOrders();
@@ -105,7 +182,7 @@ const AdminOrders = () => {
         prev
           ? {
               ...prev,
-              status,
+              orderStatus: status,
             }
           : null
       );
@@ -116,18 +193,20 @@ const AdminOrders = () => {
     }
   };
 
+  // =========================
+  // STATUS COLORS
+  // =========================
   const statusClasses = {
     pending: "bg-yellow-50 text-yellow-700",
     processing: "bg-blue-50 text-blue-700",
     shipped: "bg-purple-50 text-purple-700",
     delivered: "bg-green-50 text-green-700",
     cancelled: "bg-red-50 text-red-700",
-    paid: "bg-green-50 text-green-700",
   };
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900">
@@ -155,7 +234,7 @@ const AdminOrders = () => {
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* ================= TABLE ================= */}
       <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
         {loading ? (
           <div className="py-16 text-center text-sm text-neutral-500">
@@ -190,38 +269,49 @@ const AdminOrders = () => {
               <tbody className="divide-y divide-neutral-100">
                 {filteredOrders.map((order) => {
                   const status =
-                    order.status ||
-                    order.paymentStatus ||
-                    "pending";
+                    order.orderStatus || "pending";
 
                   return (
                     <tr key={order.id}>
-                      <td className="px-5 py-4 text-sm font-semibold text-neutral-900">
-                        #{order.id.slice(0, 8)}
+                      {/* ORDER */}
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-semibold text-neutral-900">
+                          {order.orderNumber
+                            ? `#${order.orderNumber}`
+                            : `#${order.id.slice(0, 8)}`}
+                        </p>
                       </td>
 
+                      {/* CUSTOMER */}
                       <td className="px-5 py-4">
                         <p className="text-sm font-medium text-neutral-900">
                           {getCustomerName(order)}
                         </p>
 
                         <p className="text-xs text-neutral-400">
-                          {order.email || "—"}
+                          {getCustomerEmail(order)}
                         </p>
                       </td>
 
+                      {/* AMOUNT */}
                       <td className="px-5 py-4 text-sm font-semibold text-neutral-900">
-                        {formatPrice(
-                          order.totalAmount || order.amount
-                        )}
+                        {formatNaira(order.amount)}
                       </td>
 
+                      {/* PAYMENT */}
                       <td className="px-5 py-4">
-                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs capitalize text-neutral-600">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs capitalize ${
+                            order.paymentStatus === "paid"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-yellow-50 text-yellow-700"
+                          }`}
+                        >
                           {order.paymentStatus || "pending"}
                         </span>
                       </td>
 
+                      {/* ORDER STATUS */}
                       <td className="px-5 py-4">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
@@ -233,13 +323,17 @@ const AdminOrders = () => {
                         </span>
                       </td>
 
+                      {/* DATE */}
                       <td className="px-5 py-4 text-sm text-neutral-500">
                         {formatDate(order.createdAt)}
                       </td>
 
+                      {/* VIEW */}
                       <td className="px-5 py-4">
                         <button
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() =>
+                            setSelectedOrder(order)
+                          }
                           className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-pink-600"
                         >
                           <Eye size={18} />
@@ -254,18 +348,26 @@ const AdminOrders = () => {
         )}
       </div>
 
-      {/* ORDER DETAILS MODAL */}
+      {/* ================= ORDER DETAILS MODAL ================= */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+            {/* MODAL HEADER */}
             <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
               <div>
                 <h2 className="font-semibold text-neutral-900">
-                  Order #{selectedOrder.id.slice(0, 8)}
+                  {selectedOrder.orderNumber
+                    ? `Order #${selectedOrder.orderNumber}`
+                    : `Order #${selectedOrder.id.slice(
+                        0,
+                        8
+                      )}`}
                 </h2>
 
                 <p className="text-sm text-neutral-500">
-                  {formatDate(selectedOrder.createdAt)}
+                  {formatDate(
+                    selectedOrder.createdAt
+                  )}
                 </p>
               </div>
 
@@ -278,7 +380,7 @@ const AdminOrders = () => {
             </div>
 
             <div className="space-y-6 p-5">
-              {/* CUSTOMER */}
+              {/* ================= CUSTOMER ================= */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-neutral-900">
                   Customer
@@ -290,12 +392,20 @@ const AdminOrders = () => {
                   </p>
 
                   <p className="mt-1 text-sm text-neutral-500">
-                    {selectedOrder.email || "No email"}
+                    {getCustomerEmail(selectedOrder)}
+                  </p>
+
+                  <p className="mt-1 text-sm text-neutral-500">
+                    {getCustomerPhone(selectedOrder)}
+                  </p>
+
+                  <p className="mt-2 text-sm text-neutral-600">
+                    {getCustomerAddress(selectedOrder)}
                   </p>
                 </div>
               </div>
 
-              {/* ITEMS */}
+              {/* ================= ITEMS ================= */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-neutral-900">
                   Order Items
@@ -319,9 +429,11 @@ const AdminOrders = () => {
                         </div>
 
                         <p className="text-sm font-semibold text-neutral-900">
-                          {formatPrice(
+                          {formatKobo(
                             Number(item.price || 0) *
-                              Number(item.quantity || 1)
+                              Number(
+                                item.quantity || 1
+                              )
                           )}
                         </p>
                       </div>
@@ -330,28 +442,61 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              {/* TOTAL */}
+              {/* ================= TOTAL ================= */}
               <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
                 <span className="font-semibold text-neutral-900">
                   Total
                 </span>
 
                 <span className="text-xl font-bold text-pink-600">
-                  {formatPrice(
-                    selectedOrder.totalAmount ||
-                      selectedOrder.amount
-                  )}
+                  {formatNaira(selectedOrder.amount)}
                 </span>
               </div>
 
-              {/* STATUS */}
+              {/* ================= PAYMENT STATUS ================= */}
+              <div className="rounded-xl border border-neutral-200 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-500">
+                    Payment Status
+                  </span>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                      selectedOrder.paymentStatus ===
+                      "paid"
+                        ? "bg-green-50 text-green-700"
+                        : "bg-yellow-50 text-yellow-700"
+                    }`}
+                  >
+                    {selectedOrder.paymentStatus ||
+                      "pending"}
+                  </span>
+                </div>
+
+                {selectedOrder.paymentChannel && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-sm text-neutral-500">
+                      Payment Channel
+                    </span>
+
+                    <span className="text-sm font-medium capitalize text-neutral-900">
+                      {selectedOrder.paymentChannel}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* ================= ORDER STATUS ================= */}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-neutral-900">
                   Order Status
                 </label>
 
                 <select
-                  value={selectedOrder.status || "pending"}
+                  value={
+                    selectedOrder.orderStatus ||
+                    "pending"
+                  }
                   onChange={(e) =>
                     updateOrderStatus(
                       selectedOrder.id,
@@ -361,24 +506,37 @@ const AdminOrders = () => {
                   disabled={updating}
                   className="w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-pink-500"
                 >
-                  <option value="pending">Pending</option>
+                  <option value="pending">
+                    Pending
+                  </option>
+
                   <option value="processing">
                     Processing
                   </option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
+
+                  <option value="shipped">
+                    Shipped
+                  </option>
+
+                  <option value="delivered">
+                    Delivered
+                  </option>
+
+                  <option value="cancelled">
+                    Cancelled
+                  </option>
                 </select>
               </div>
 
-              {selectedOrder.reference && (
+              {/* ================= PAYMENT REFERENCE ================= */}
+              {selectedOrder.paymentReference && (
                 <div className="rounded-xl bg-neutral-50 p-4">
                   <p className="text-xs text-neutral-500">
                     Payment Reference
                   </p>
 
                   <p className="mt-1 break-all text-sm font-medium text-neutral-900">
-                    {selectedOrder.reference}
+                    {selectedOrder.paymentReference}
                   </p>
                 </div>
               )}
