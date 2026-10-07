@@ -35,6 +35,23 @@ const AdminCategories = () => {
     isActive: true,
   });
 
+  /* =====================================================
+     CREATE SLUG
+  ===================================================== */
+
+  const createSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  };
+
+  /* =====================================================
+     FETCH CATEGORIES
+  ===================================================== */
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
@@ -53,7 +70,10 @@ const AdminCategories = () => {
         }))
       );
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error(
+        "Error fetching categories:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -62,6 +82,10 @@ const AdminCategories = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  /* =====================================================
+     OPEN ADD MODAL
+  ===================================================== */
 
   const openAddModal = () => {
     setEditingCategory(null);
@@ -75,6 +99,10 @@ const AdminCategories = () => {
     setShowModal(true);
   };
 
+  /* =====================================================
+     OPEN EDIT MODAL
+  ===================================================== */
+
   const openEditModal = (category) => {
     setEditingCategory(category);
 
@@ -87,48 +115,85 @@ const AdminCategories = () => {
     setShowModal(true);
   };
 
+  /* =====================================================
+     HANDLE FORM
+  ===================================================== */
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox" ? checked : value,
     }));
   };
+
+  /* =====================================================
+     SUBMIT
+  ===================================================== */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name.trim()) return;
+    const categoryName = formData.name.trim();
+
+    if (!categoryName) {
+      return;
+    }
 
     try {
       setSaving(true);
 
+      const slug = createSlug(categoryName);
+
       if (editingCategory) {
-        await updateDoc(doc(db, "categories", editingCategory.id), {
-          name: formData.name.trim(),
-          description: formData.description.trim(),
-          isActive: formData.isActive,
-          updatedAt: serverTimestamp(),
-        });
+        await updateDoc(
+          doc(
+            db,
+            "categories",
+            editingCategory.id
+          ),
+          {
+            name: categoryName,
+            slug,
+            description:
+              formData.description.trim(),
+            isActive: formData.isActive,
+            updatedAt: serverTimestamp(),
+          }
+        );
       } else {
-        await addDoc(collection(db, "categories"), {
-          name: formData.name.trim(),
-          description: formData.description.trim(),
-          isActive: formData.isActive,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+        await addDoc(
+          collection(db, "categories"),
+          {
+            name: categoryName,
+            slug,
+            description:
+              formData.description.trim(),
+            isActive: formData.isActive,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }
+        );
       }
 
       setShowModal(false);
+
       await fetchCategories();
     } catch (error) {
-      console.error("Category save error:", error);
+      console.error(
+        "Category save error:",
+        error
+      );
     } finally {
       setSaving(false);
     }
   };
+
+  /* =====================================================
+     DELETE
+  ===================================================== */
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
@@ -138,24 +203,38 @@ const AdminCategories = () => {
     if (!confirmed) return;
 
     try {
-      await deleteDoc(doc(db, "categories", id));
+      await deleteDoc(
+        doc(db, "categories", id)
+      );
+
       await fetchCategories();
     } catch (error) {
-      console.error("Category delete error:", error);
+      console.error(
+        "Category delete error:",
+        error
+      );
     }
   };
 
+  /* =====================================================
+     RENDER
+  ===================================================== */
+
   return (
     <div className="space-y-6">
+
       {/* HEADER */}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
         <div>
           <h1 className="text-2xl font-bold text-neutral-900">
             Categories
           </h1>
 
           <p className="mt-1 text-sm text-neutral-500">
-            Manage your product categories.
+            Manage the categories used across
+            your store.
           </p>
         </div>
 
@@ -164,18 +243,26 @@ const AdminCategories = () => {
           className="flex items-center justify-center gap-2 rounded-lg bg-pink-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pink-600"
         >
           <Plus size={18} />
+
           Add Category
         </button>
+
       </div>
 
-      {/* CATEGORIES */}
+      {/* CATEGORY GRID */}
+
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
         {loading ? (
-          <div className="col-span-full py-12 text-center text-sm text-neutral-500">
+
+          <div className="py-12 text-sm text-center col-span-full text-neutral-500">
             Loading categories...
           </div>
+
         ) : categories.length === 0 ? (
-          <div className="col-span-full rounded-2xl border border-dashed border-neutral-300 bg-white py-16 text-center">
+
+          <div className="py-16 text-center bg-white border border-dashed col-span-full rounded-2xl border-neutral-300">
+
             <Folder
               size={40}
               className="mx-auto text-neutral-300"
@@ -188,20 +275,28 @@ const AdminCategories = () => {
             <p className="mt-1 text-sm text-neutral-500">
               Create your first product category.
             </p>
+
           </div>
+
         ) : (
+
           categories.map((category) => (
+
             <div
               key={category.id}
-              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
+              className="p-5 bg-white border shadow-sm rounded-2xl border-neutral-200"
             >
+
               <div className="flex items-start justify-between gap-4">
+
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
+
+                  <div className="flex items-center justify-center text-pink-600 h-11 w-11 rounded-xl bg-pink-50">
                     <Folder size={20} />
                   </div>
 
                   <div>
+
                     <h3 className="font-semibold text-neutral-900">
                       {category.name}
                     </h3>
@@ -217,39 +312,75 @@ const AdminCategories = () => {
                         ? "Active"
                         : "Inactive"}
                     </span>
+
                   </div>
+
                 </div>
 
                 <div className="flex gap-1">
+
                   <button
-                    onClick={() => openEditModal(category)}
-                    className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+                    onClick={() =>
+                      openEditModal(category)
+                    }
+                    className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                   >
                     <Pencil size={17} />
                   </button>
 
                   <button
-                    onClick={() => handleDelete(category.id)}
-                    className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                    onClick={() =>
+                      handleDelete(category.id)
+                    }
+                    className="p-2 text-red-500 rounded-lg hover:bg-red-50"
                   >
                     <Trash2 size={17} />
                   </button>
+
                 </div>
+
               </div>
 
               <p className="mt-4 text-sm text-neutral-500">
-                {category.description || "No description"}
+                {category.description ||
+                  "No description"}
               </p>
+
+              {/* SLUG */}
+
+              <div className="pt-3 mt-4 border-t border-neutral-100">
+
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400">
+                  URL Slug
+                </p>
+
+                <p className="mt-1 text-xs text-neutral-600">
+                  /category/{category.slug ||
+                    createSlug(category.name)}
+                </p>
+
+              </div>
+
             </div>
+
           ))
+
         )}
+
       </div>
 
       {/* MODAL */}
+
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
+
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
+
+          <div className="w-full max-w-md bg-white shadow-xl rounded-2xl">
+
+            {/* MODAL HEADER */}
+
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200">
+
               <h2 className="font-semibold text-neutral-900">
                 {editingCategory
                   ? "Edit Category"
@@ -257,19 +388,28 @@ const AdminCategories = () => {
               </h2>
 
               <button
-                onClick={() => setShowModal(false)}
-                className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100"
+                onClick={() =>
+                  setShowModal(false)
+                }
+                className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100"
               >
                 <X size={20} />
               </button>
+
             </div>
+
+            {/* FORM */}
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-5 p-5"
+              className="p-5 space-y-5"
             >
+
+              {/* NAME */}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-neutral-700">
+
+                <label className="block mb-2 text-sm font-medium text-neutral-700">
                   Category Name
                 </label>
 
@@ -277,13 +417,26 @@ const AdminCategories = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Wigs"
-                  className="w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-pink-500"
+                  placeholder="e.g. Straight Wigs"
+                  className="w-full px-4 py-3 border rounded-lg outline-none border-neutral-300 focus:border-pink-500"
                 />
+
+                {formData.name && (
+                  <p className="mt-2 text-xs text-neutral-400">
+                    URL:
+                    {" "}
+                    /category/
+                    {createSlug(formData.name)}
+                  </p>
+                )}
+
               </div>
 
+              {/* DESCRIPTION */}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-neutral-700">
+
+                <label className="block mb-2 text-sm font-medium text-neutral-700">
                   Description
                 </label>
 
@@ -293,26 +446,36 @@ const AdminCategories = () => {
                   onChange={handleChange}
                   rows={3}
                   placeholder="Category description..."
-                  className="w-full resize-none rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-pink-500"
+                  className="w-full px-4 py-3 border rounded-lg outline-none resize-none border-neutral-300 focus:border-pink-500"
                 />
+
               </div>
 
+              {/* ACTIVE */}
+
               <label className="flex items-center gap-3 text-sm text-neutral-700">
+
                 <input
                   type="checkbox"
                   name="isActive"
                   checked={formData.isActive}
                   onChange={handleChange}
-                  className="h-4 w-4 accent-pink-500"
+                  className="w-4 h-4 accent-pink-500"
                 />
 
                 Active category
+
               </label>
+
+              {/* SUBMIT */}
 
               <button
                 type="submit"
-                disabled={saving}
-                className="w-full rounded-lg bg-pink-500 py-3 font-semibold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-pink-300"
+                disabled={
+                  saving ||
+                  !formData.name.trim()
+                }
+                className="w-full py-3 font-semibold text-white transition bg-pink-500 rounded-lg hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-pink-300"
               >
                 {saving
                   ? "Saving..."
@@ -320,10 +483,15 @@ const AdminCategories = () => {
                   ? "Update Category"
                   : "Create Category"}
               </button>
+
             </form>
+
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 };

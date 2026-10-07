@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import About from "./pages/About";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -14,6 +15,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import Shop from "./pages/Shop";
+import OrderDetails from "./pages/OrderDetails";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -24,6 +26,7 @@ import AdminCategories from "./pages/admin/categories/AdminCategories";
 import AdminCustomers from "./pages/admin/customers/AdminCustomers";
 import AdminOrders from "./pages/admin/orders/AdminOrders";
 import AdminDashboard from "./pages/admin/dashboard/AdminDashboard";
+import Orders from "./pages/Orders";
 
 /* ========================= */
 /* WEBSITE LAYOUT */
@@ -65,6 +68,10 @@ function App() {
           path="/category/:category"
           element={<Shop />}
         />
+        <Route
+          path="/payment-success"
+          element={<PaymentSuccess />}
+        />
 
         <Route
           path="/product/:id"
@@ -88,6 +95,14 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/orders"
+            element={<Orders />}
+          />
+          <Route
+            path="/orders/:orderId"
+            element={<OrderDetails />}
+          />
         </Route>
         <Route path="/checkout" element={<Checkout />} />
       </Route>
@@ -129,9 +144,9 @@ function App() {
       <Route
         path="*"
         element={
-          <div className="min-h-screen flex items-center justify-center">
+          <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
-              <h1 className="text-5xl font-bold mb-3">
+              <h1 className="mb-3 text-5xl font-bold">
                 404
               </h1>
 

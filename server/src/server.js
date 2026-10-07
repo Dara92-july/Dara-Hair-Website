@@ -1,10 +1,12 @@
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+const dotenv = require("dotenv");dotenv.config();
+
 
 const paymentRoutes = require("../routes/paymentRoutes");
 
-dotenv.config();
+
 
 const app = express();
 
