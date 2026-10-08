@@ -6,29 +6,15 @@ dotenv.config();
 
 const paymentRoutes = require("../routes/paymentRoutes");
 
-// Make sure express() is called to initialize the app instance
 const app = express();
 
-const clientUrl = (process.env.CLIENT_URL || "https://dara-hair-website.vercel.app").replace(/\/$/, "");
-
 const corsOptions = {
-  origin: clientUrl,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  origin: "https://dara-hair-website.vercel.app",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
 };
 
-// Global CORS middleware
 app.use(cors(corsOptions));
-
-// Additional CORS headers for debugging and safety
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", clientUrl);
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
 
 app.use(express.json());
 
@@ -42,6 +28,6 @@ app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Payment server running on port ${PORT}`);
 });
