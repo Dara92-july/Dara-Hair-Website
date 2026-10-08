@@ -519,7 +519,7 @@ const Home = () => {
           <div className="min-h-[460px] lg:min-h-[620px]">
 
             <img
-              src="https://res.cloudinary.com/dzo14hk18/image/upload/v1791453931/dara_hero_hwy23j.jpg"
+              src="https://res.cloudinary.com/dzo14hk18/image/upload/v1791462195/second_hero_h4nxsm.jpg"
               alt="Dara Hair beauty collection"
               className="h-full w-full object-cover"
             />
