@@ -224,7 +224,7 @@ const Navbar = () => {
           </div>
 
           {/* ACCOUNT AND CART: RIGHT */}
-          <div className="hidden items-center justify-self-end gap-5 lg:flex">
+          <div className="hidden items-center justify-self-end gap-3 lg:flex">
             {/* ACCOUNT */}
             <div ref={accountRef} className="relative">
               <button

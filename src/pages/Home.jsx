@@ -127,6 +127,7 @@ const Home = () => {
     "https://i.pinimg.com/736x/52/90/68/52906809f75cf3ba4488c873a9a98fc5.jpg",
     "https://i.pinimg.com/736x/8c/50/db/8c50db8a654f8416ddbb0bb5f1786475.jpg",
     "https://i.pinimg.com/736x/cc/f3/72/ccf3724ead4cba600a633c6857ed3e27.jpg",
+    "https://i.pinimg.com/1200x/84/3b/c8/843bc8fb6eb7a59e57fed46fcdd1f1f0.jpg"
   ];
 
   // =====================================================
