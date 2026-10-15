@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
-import { ArrowRight, MapPin, Phone, MessageCircle } from "lucide-react";
+import { ArrowRight, MapPin, Phone } from "lucide-react";
 
 import { db } from "../firebase/firebase";
 import logo from "../assets/images/dara-logo.jpg";
@@ -52,7 +52,7 @@ function Footer() {
           <div>
             <Link to="/" className="inline-block">
               <img
-                src={logo}
+                src='https://res.cloudinary.com/dzo14hk18/image/upload/v1792064118/dara_logo-removebg-preview_ndpjmy.png'
                 alt="Dara Hair"
                 className="h-16 w-auto object-contain"
               />

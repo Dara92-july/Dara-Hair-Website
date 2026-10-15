@@ -27,6 +27,7 @@ import AdminCustomers from "./pages/admin/customers/AdminCustomers";
 import AdminOrders from "./pages/admin/orders/AdminOrders";
 import AdminDashboard from "./pages/admin/dashboard/AdminDashboard";
 import Orders from "./pages/Orders";
+import ScrollToTop from "./components/ScrollToTop";
 
 /* ========================= */
 /* WEBSITE LAYOUT */
@@ -35,6 +36,7 @@ import Orders from "./pages/Orders";
 const WebsiteLayout = () => {
   return (
     <>
+    <ScrollToTop/>
       <Navbar />
 
       <Outlet />
