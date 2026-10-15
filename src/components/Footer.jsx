@@ -1,211 +1,210 @@
-import { Link } from "react-router-dom";
+
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { Link } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { ArrowRight, MapPin, Phone, MessageCircle } from "lucide-react";
 
-import { db } from "../firebase/firebase.js";
-
+import { db } from "../firebase/firebase";
 import logo from "../assets/images/dara-logo.jpg";
 
-const Footer = () => {
+function Footer() {
   const [categories, setCategories] = useState([]);
 
-  // =========================
-  // FETCH ACTIVE CATEGORIES
-  // =========================
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const categoriesRef = collection(db, "categories");
+        const snapshot = await getDocs(collection(db, "categories"));
 
-        const q = query(
-          categoriesRef,
-          where("isActive", "==", true)
-        );
+        const activeCategories = snapshot.docs
+          .map((document) => ({
+            id: document.id,
+            ...document.data(),
+          }))
+          .filter((category) => category.isActive === true);
 
-        const snapshot = await getDocs(q);
-
-        const categoryList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setCategories(categoryList);
+        setCategories(activeCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching footer categories:", error);
       }
     };
 
     fetchCategories();
   }, []);
 
-  // =========================
-  // CREATE CATEGORY SLUG
-  // =========================
-  const createSlug = (name) => {
-    return name
+  const createSlug = (name) =>
+    name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-");
-  };
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+  const currentYear = new Date().getFullYear();
+
+  // const whatsappMessage = encodeURIComponent(
+  //   "Hello Dara Hair, I would like to make an enquiry."
+  // );
 
   return (
-    <footer className="bg-neutral-100 mt-10">
+    <footer className="mt-16 border-t border-pink-100 bg-white text-neutral-800">
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+          {/* Brand */}
+          <div>
+            <Link to="/" className="inline-block">
+              <img
+                src={logo}
+                alt="Dara Hair"
+                className="h-16 w-auto object-contain"
+              />
+            </Link>
 
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+            <p className="mt-4 max-w-xs text-sm leading-7 text-neutral-500">
+              Your beauty, your confidence. Discover beautiful wigs and
+              quality hair designed to help you look and feel your best.
+            </p>
 
-        {/* =========================
-            LOGO & ABOUT
-        ========================= */}
-        <div className="text-center md:text-left">
-
-          <div className="flex justify-center md:justify-start items-center space-x-2 mb-3">
-
-            <img
-              src={logo}
-              alt="Dara Hair Logo"
-              className="w-10 h-10 rounded-full"
-            />
-
-            <span className="text-lg font-bold">
-              Dara Hair
-            </span>
-
+            <Link
+              to="/"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-pink-600 transition hover:gap-3"
+            >
+              Explore our collection
+              <ArrowRight size={16} />
+            </Link>
           </div>
 
-          <p className="text-neutral-700 max-w-xs mx-auto md:mx-0">
-            Premium quality wigs and hair products to help you look your best
-            every day. Affordable, stylish, and delivered with care.
-          </p>
+          {/* Quick Links */}
+          <div>
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-neutral-900">
+              Quick Links
+            </h3>
 
-        </div>
-
-        {/* =========================
-            QUICK LINKS
-        ========================= */}
-        <div className="text-center md:text-left">
-
-          <h3 className="font-semibold mb-3">
-            Quick Links
-          </h3>
-
-          <ul className="space-y-2">
-
-            <li>
-              <Link
-                to="/"
-                className="hover:text-pink-500 transition"
-              >
-                Home
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/about"
-                className="hover:text-pink-500 transition"
-              >
-                About
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/cart"
-                className="hover:text-pink-500 transition"
-              >
-                Cart
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/profile"
-                className="hover:text-pink-500 transition"
-              >
-                My Profile
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/orders"
-                className="hover:text-pink-500 transition"
-              >
-                My Orders
-              </Link>
-            </li>
-
-          </ul>
-
-        </div>
-
-        {/* =========================
-            CATEGORIES
-        ========================= */}
-        <div className="text-center md:text-left">
-
-          <h3 className="font-semibold mb-3">
-            Categories
-          </h3>
-
-          <ul className="space-y-2">
-
-            {categories.length === 0 ? (
-              <li className="text-neutral-500">
-                No categories available
+            <ul className="space-y-3 text-sm text-neutral-500">
+              <li>
+                <Link
+                  to="/"
+                  className="transition hover:text-pink-600"
+                >
+                  Home
+                </Link>
               </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="transition hover:text-pink-600"
+                >
+                  About Dara Hair
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cart"
+                  className="transition hover:text-pink-600"
+                >
+                  Shopping Cart
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/profile"
+                  className="transition hover:text-pink-600"
+                >
+                  My Account
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/orders"
+                  className="transition hover:text-pink-600"
+                >
+                  My Orders
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Categories */}
+          <div>
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-neutral-900">
+              Shop Categories
+            </h3>
+
+            {categories.length > 0 ? (
+              <ul className="space-y-3 text-sm text-neutral-500">
+                {categories.map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      to={`/category/${category.slug || createSlug(category.name)}`}
+                      className="transition hover:text-pink-600"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              categories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    to={`/category/${createSlug(category.name)}`}
-                    className="hover:text-pink-500 transition"
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))
+              <p className="text-sm leading-6 text-neutral-500">
+                Explore our collection of beautiful hair and wigs.
+              </p>
             )}
+          </div>
 
-          </ul>
+          {/* Contact */}
+          <div>
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-neutral-900">
+              Get in Touch
+            </h3>
 
+            <ul className="space-y-4 text-sm text-neutral-500">
+              <li className="flex items-start gap-3">
+                <Phone
+                  size={18}
+                  className="mt-0.5 shrink-0 text-pink-500"
+                />
+                <a
+                  href="tel:+2348135881390"
+                  className="transition hover:text-pink-600"
+                >
+                  +234 813 588 1390
+                </a>
+              </li>
+
+              <li className="flex items-start gap-3">
+                <MapPin
+                  size={18}
+                  className="mt-0.5 shrink-0 text-pink-500"
+                />
+                <span>Lagos, Nigeria</span>
+              </li>
+            </ul>
+
+            {/* <a
+              href={`https://wa.me/2348135881390?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-pink-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-pink-600"
+            >
+              <MessageCircle size={18} />
+              Chat with us
+            </a> */}
+          </div>
         </div>
 
-        {/* =========================
-            CONTACT
-        ========================= */}
-        <div className="text-center md:text-left">
+        {/* Bottom Bar */}
+        <div className="mt-12 border-t border-pink-100 pt-6">
+          <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
+            <p className="text-xs leading-6 text-neutral-500">
+              © {currentYear} Dara Hair. All rights reserved.
+            </p>
 
-          <h3 className="font-semibold mb-3">
-            Contact Us
-          </h3>
-
-          <ul className="space-y-2 text-neutral-700">
-
-            <li>
-              📞 +234 813 588 1390
-            </li>
-
-            <li>
-              📍 Lagos, Nigeria
-            </li>
-
-          </ul>
-
+            <p className="text-xs text-neutral-500">
+              Made with <span className="text-pink-500">♥</span> for your
+              beauty and confidence.
+            </p>
+          </div>
         </div>
-
       </div>
-
-      {/* =========================
-          BOTTOM BAR
-      ========================= */}
-      <div className="bg-pink-500 text-white text-center text-sm py-3">
-        © {new Date().getFullYear()} Dara Hair and Extensions. All rights reserved.
-      </div>
-
     </footer>
   );
-};
+}
 
 export default Footer;

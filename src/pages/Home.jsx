@@ -118,15 +118,14 @@ const Home = () => {
     .slice(0, 4);
 
   // =====================================================
-  // CATEGORY FALLBACK IMAGES
-  // Replace with Cloudinary images later
+  // CATEGORY IMAGES
   // =====================================================
 
   const categoryImages = [
+    "https://i.pinimg.com/236x/a6/50/a9/a650a97e78c9ffb96f50037da0ac7ec6.jpg",
+    "https://i.pinimg.com/736x/7b/9b/2b/7b9b2b22779f9b09b7ad12c7b2040681.jpg",
     "https://i.pinimg.com/736x/52/90/68/52906809f75cf3ba4488c873a9a98fc5.jpg",
     "https://i.pinimg.com/736x/8c/50/db/8c50db8a654f8416ddbb0bb5f1786475.jpg",
-    "https://i.pinimg.com/736x/7b/9b/2b/7b9b2b22779f9b09b7ad12c7b2040681.jpg",
-    "https://i.pinimg.com/236x/a6/50/a9/a650a97e78c9ffb96f50037da0ac7ec6.jpg",
     "https://i.pinimg.com/736x/cc/f3/72/ccf3724ead4cba600a633c6857ed3e27.jpg",
   ];
 

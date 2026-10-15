@@ -90,9 +90,14 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  
   const formatPrice = (amount) => {
-    return `₦${(Number(amount || 0) / 100).toLocaleString("en-NG")}`;
+    return `₦${Number(amount || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
   };
+
 
   const formatDate = (timestamp) => {
     if (!timestamp?.toDate) return "—";

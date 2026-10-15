@@ -139,14 +139,14 @@ const About = () => {
               </p>
             </div>
 
-            {/* 2019 */}
+            {/* 2018 */}
             <div className="relative bg-white border border-pink-100 rounded-2xl p-7 shadow-sm hover:shadow-md transition">
               <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-6">
                 <Sparkles className="text-pink-600" size={21} />
               </div>
 
               <p className="text-3xl font-serif font-semibold text-pink-600 mb-3">
-                2019
+                2018
               </p>
 
               <h3 className="text-lg font-semibold text-neutral-900 mb-3">
@@ -228,7 +228,7 @@ const About = () => {
                 </p>
 
                 <p>
-                  In 2019, while I was serving, the idea of buying and selling
+                  In 2018, while I was serving, the idea of buying and selling
                   hair started to grow. At that time, I began with braided
                   wigs, taking the first steps towards turning my experience
                   with hair into something bigger.
@@ -275,7 +275,7 @@ const About = () => {
               </p>
 
               <div className="mt-8 pt-6 border-t border-pink-100">
-                <p className="font-semibold text-neutral-900">Dara</p>
+                <p className="font-semibold text-neutral-900">Gbemisola Omodara</p>
                 <p className="text-sm text-pink-600 mt-1">
                   Founder, Dara Hair
                 </p>
